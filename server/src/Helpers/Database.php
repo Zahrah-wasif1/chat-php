@@ -8,11 +8,17 @@ class Database {
 
     public static function getConnection(): PDO {
         if (self::$connection === null) {
-            $host = $_ENV['DB_HOST'];
-            $db   = $_ENV['DB_NAME'];
-            $user = $_ENV['DB_USER'];
-            $pass = $_ENV['DB_PASS'];
-            $dsn  = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+            $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
+            $db   = $_ENV['DB_DATABASE'] ?? ($_ENV['DB_NAME'] ?? null);
+            $user = $_ENV['DB_USERNAME'] ?? ($_ENV['DB_USER'] ?? null);
+            $pass = $_ENV['DB_PASSWORD'] ?? ($_ENV['DB_PASS'] ?? '');
+            $port = $_ENV['DB_PORT'] ?? null;
+
+            if ($db === null || $user === null) {
+                throw new \RuntimeException('Database configuration is missing. Please check your environment variables.');
+            }
+
+            $dsn  = "mysql:host=$host" . ($port ? ";port=$port" : "") . ";dbname=$db;charset=utf8mb4";
 
             self::$connection = new PDO($dsn, $user, $pass, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

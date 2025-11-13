@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Helpers\Database;
 
 class AuthController {
 
@@ -21,11 +22,7 @@ class AuthController {
 
         // Generate API token
         $token = bin2hex(random_bytes(32));
-        $pdo = new \PDO(
-            "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'],
-            $_ENV['DB_USER'],
-            $_ENV['DB_PASS']
-        );
+        $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE users SET api_token = ? WHERE id = ?");
         $stmt->execute([$token, $user['id']]);
 
@@ -53,11 +50,7 @@ class AuthController {
 
         // Generate new API token
         $token = bin2hex(random_bytes(32));
-        $pdo = new \PDO(
-            "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'],
-            $_ENV['DB_USER'],
-            $_ENV['DB_PASS']
-        );
+        $pdo = Database::getConnection();
         $stmt = $pdo->prepare("UPDATE users SET api_token = ? WHERE id = ?");
         $stmt->execute([$token, $user['id']]);
 

@@ -1,16 +1,15 @@
 <?php
 namespace App\Models;
 
+use App\Helpers\Database;
 use PDO;
 
 class Message {
-    private static function getDB() {
-        $dsn = "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'];
-        return new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS'], [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
+    private static function getDB(): PDO {
+        return Database::getConnection();
     }
-public static function getMessages($room_id = null, $user_id = null)
+
+    public static function getMessages($room_id = null, $user_id = null)
     {
         $db = Database::getConnection();
         $query = "SELECT * FROM messages WHERE 1=1";
@@ -58,23 +57,23 @@ public static function getMessages($room_id = null, $user_id = null)
 
     // Create new message or reply
     public static function create($data) {
-    $pdo = self::getDB();
+        $pdo = self::getDB();
 
-    $stmt = $pdo->prepare("
-        INSERT INTO messages (room_id, sender_id, content, parent_message_id, created_at, updated_at)
-        VALUES (?, ?, ?, ?, NOW(), NOW())
-    ");
+        $stmt = $pdo->prepare("
+            INSERT INTO messages (room_id, sender_id, content, parent_message_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, NOW(), NOW())
+        ");
 
-    $stmt->execute([
-        $data['room_id'],
-        $data['sender_id'],
-        $data['content'],
-        $data['parent_message_id'] ?? null
-    ]);
+        $stmt->execute([
+            $data['room_id'],
+            $data['sender_id'],
+            $data['content'],
+            $data['parent_message_id'] ?? null
+        ]);
 
-    $data['id'] = $pdo->lastInsertId();
-    $data['reply_to'] = $data['parent_message_id'] ?? null; // Add this
-    return $data;
-}
+        $data['id'] = $pdo->lastInsertId();
+        $data['reply_to'] = $data['parent_message_id'] ?? null;
+        return $data;
+    }
 
 }

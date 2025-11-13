@@ -10,7 +10,11 @@ use App\Helpers\AuthHelper;
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load();
+$dotenv->safeLoad();
+
+if (!isset($_ENV['DB_HOST']) && file_exists(__DIR__ . '/../env.example')) {
+    Dotenv::createImmutable(__DIR__ . '/../', 'env.example')->load();
+}
 
 
 
