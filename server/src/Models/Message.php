@@ -1,0 +1,80 @@
+<?php
+namespace App\Models;
+
+use PDO;
+
+class Message {
+    private static function getDB() {
+        $dsn = "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'];
+        return new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+    }
+public static function getMessages($room_id = null, $user_id = null)
+    {
+        $db = Database::getConnection();
+        $query = "SELECT * FROM messages WHERE 1=1";
+        $params = [];
+
+        if ($room_id) {
+            $query .= " AND room_id = :room_id";
+            $params[':room_id'] = $room_id;
+        }
+
+        if ($user_id) {
+            $query .= " AND sender_id = :user_id";
+            $params[':user_id'] = $user_id;
+        }
+
+        $query .= " ORDER BY created_at ASC";
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    // Get messages by room_id
+    public static function getMessagesByRoom($room_id) {
+        $pdo = self::getDB();
+        $stmt = $pdo->prepare("SELECT * FROM messages WHERE room_id = ? ORDER BY created_at ASC");
+        $stmt->execute([$room_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Get messages by user_id
+    public static function getMessagesByUser($user_id) {
+        $pdo = self::getDB();
+        $stmt = $pdo->prepare("SELECT * FROM messages WHERE sender_id = ? ORDER BY created_at ASC");
+        $stmt->execute([$user_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Find single message by ID
+    public static function find($id) {
+        $pdo = self::getDB();
+        $stmt = $pdo->prepare("SELECT * FROM messages WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Create new message or reply
+    public static function create($data) {
+    $pdo = self::getDB();
+
+    $stmt = $pdo->prepare("
+        INSERT INTO messages (room_id, sender_id, content, parent_message_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, NOW(), NOW())
+    ");
+
+    $stmt->execute([
+        $data['room_id'],
+        $data['sender_id'],
+        $data['content'],
+        $data['parent_message_id'] ?? null
+    ]);
+
+    $data['id'] = $pdo->lastInsertId();
+    $data['reply_to'] = $data['parent_message_id'] ?? null; // Add this
+    return $data;
+}
+
+}
