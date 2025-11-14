@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use App\Config\Database;
+use App\Helpers\Database;
 use PDO;
 
 class Room {

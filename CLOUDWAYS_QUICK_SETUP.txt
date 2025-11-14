@@ -1,0 +1,59 @@
+CLOUDWAYS DEPLOYMENT - QUICK SETUP CHECKLIST
+=============================================
+
+✅ COMPLETED CHANGES:
+1. Created .htaccess file for Apache routing
+2. Fixed hardcoded localhost URL in socket server
+3. Added environment variable support
+4. Updated env.example with Cloudways-friendly defaults
+5. Created .gitignore to protect sensitive files
+6. Added dotenv package to socket server
+
+📋 DEPLOYMENT STEPS:
+
+1. UPLOAD FILES:
+   - Upload entire 'server' folder to Cloudways public_html
+   - Upload 'sock' folder outside public_html (for security)
+
+2. SET DOCUMENT ROOT:
+   - In Cloudways panel: Application Settings → Document Root
+   - Set to: public_html/public
+
+3. CREATE .ENV FILE:
+   - Location: public_html/.env (same level as public folder)
+   - Copy from env.example and update with Cloudways database credentials
+   - Get credentials from: Cloudways Panel → Access Details
+
+4. INSTALL DEPENDENCIES:
+   SSH commands:
+   cd /home/master/applications/[app-id]/public_html
+   composer install --no-dev
+
+5. SETUP SOCKET SERVER:
+   SSH commands:
+   cd /path/to/sock
+   npm install
+   Create .env file with API_URL and SOCKET_PORT
+   pm2 start server.js --name chat-socket
+   pm2 save
+   pm2 startup
+
+6. DATABASE:
+   - Import your database schema
+   - Verify connection in .env file
+
+7. PERMISSIONS:
+   chmod -R 755 public_html/public
+
+8. SSL:
+   - Enable free SSL in Cloudways panel
+
+⚠️ IMPORTANT:
+- Never commit .env files
+- Document root must be: public_html/public
+- Socket server port 3000 must be open
+- Update API_URL in socket .env with your domain
+
+📞 SUPPORT:
+Check DEPLOYMENT.md for detailed instructions
+

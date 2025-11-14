@@ -1,19 +1,20 @@
 <?php
 namespace App\Models;
+
 use App\Helpers\Database;
 use PDO;
 
 class User {
-     private static function getDB() {
-        $dsn = "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'];
-        return new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS']);
+    private static function getDB(): PDO {
+        return Database::getConnection();
     }
-    
-   
+
     public static function create($name, $email, $password) {
         $pdo = self::getDB();
         $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-        return $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
+        $stmt->execute([$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
+
+        return self::find((int)$pdo->lastInsertId());
     }
 
     public static function findByEmail($email) {
@@ -30,7 +31,7 @@ class User {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-   public static function find($userId)
+    public static function find($userId)
     {
         $db = Database::getConnection();
         $stmt = $db->prepare("
@@ -42,13 +43,13 @@ class User {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-public static function getAllUsers(): array {
+    public static function getAllUsers(): array {
         $db = Database::getConnection();
         $stmt = $db->query("SELECT * FROM users");
         return $stmt->fetchAll();
     }
 
- public static function updateUserStatus($userId, $status)
+    public static function updateUserStatus($userId, $status)
     {
         $db = Database::getConnection();
         $stmt = $db->prepare("
