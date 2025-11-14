@@ -5,13 +5,16 @@ use App\Helpers\Database;
 use PDO;
 
 class Message {
+
+    // Get PDO connection
     private static function getDB(): PDO {
         return Database::getConnection();
     }
 
+    // Get all messages with optional filters
     public static function getMessages($room_id = null, $user_id = null)
     {
-        $db = Database::getConnection();
+        $db = self::getDB();
         $query = "SELECT * FROM messages WHERE 1=1";
         $params = [];
 
@@ -31,6 +34,7 @@ class Message {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     // Get messages by room_id
     public static function getMessagesByRoom($room_id) {
         $pdo = self::getDB();
@@ -47,7 +51,7 @@ class Message {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Find single message by ID
+    // Find a single message by ID
     public static function find($id) {
         $pdo = self::getDB();
         $stmt = $pdo->prepare("SELECT * FROM messages WHERE id = ?");
@@ -55,7 +59,7 @@ class Message {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Create new message or reply
+    // Create a new message or reply
     public static function create($data) {
         $pdo = self::getDB();
 
@@ -73,7 +77,7 @@ class Message {
 
         $data['id'] = $pdo->lastInsertId();
         $data['reply_to'] = $data['parent_message_id'] ?? null;
+
         return $data;
     }
-
 }

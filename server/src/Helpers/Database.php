@@ -6,12 +6,14 @@ use PDO;
 class Database {
     private static ?PDO $connection = null;
 
+    // Get PDO connection
     public static function getConnection(): PDO {
         if (self::$connection === null) {
+            // Load from environment variables
             $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
-            $db   = $_ENV['DB_DATABASE'] ?? ($_ENV['DB_NAME'] ?? null);
-            $user = $_ENV['DB_USERNAME'] ?? ($_ENV['DB_USER'] ?? null);
-            $pass = $_ENV['DB_PASSWORD'] ?? ($_ENV['DB_PASS'] ?? '');
+            $db   = $_ENV['DB_NAME'] ?? null;
+            $user = $_ENV['DB_USER'] ?? null;
+            $pass = $_ENV['DB_PASS'] ?? '';
             $port = $_ENV['DB_PORT'] ?? null;
 
             if ($db === null || $user === null) {
@@ -25,7 +27,7 @@ class Database {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
             ]);
         }
+
         return self::$connection;
     }
-    
 }

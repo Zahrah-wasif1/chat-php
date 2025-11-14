@@ -3,44 +3,31 @@ namespace App\Helpers;
 
 use PDO;
 
-class AuthHelper {
+class Database {
+    private static ?PDO $connection = null;
 
-    private static function getDB() {
-        return Database::getConnection();
-    }
+    // Get PDO connection
+    public static function getConnection(): PDO {
+        if (self::$connection === null) {
+            // Load from environment variables
+            $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
+            $db   = $_ENV['DB_NAME'] ?? null;
+            $user = $_ENV['DB_USER'] ?? null;
+            $pass = $_ENV['DB_PASS'] ?? '';
+            $port = $_ENV['DB_PORT'] ?? null;
 
-   public static function getAuthenticatedUser() {
-    $headers = getallheaders();
-    if (empty($headers['Authorization'])) {
-        return null;
-    }
+            if ($db === null || $user === null) {
+                throw new \RuntimeException('Database configuration is missing. Please check your environment variables.');
+            }
 
-    $token = str_replace('Bearer ', '', $headers['Authorization']);
-    if (empty($token)) {
-        return null;
-    }
+            $dsn  = "mysql:host=$host" . ($port ? ";port=$port" : "") . ";dbname=$db;charset=utf8mb4";
 
-    $pdo = self::getDB();
-
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE api_token = ? LIMIT 1");
-    $stmt->execute([$token]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user || $user['is_banned']) {
-        return null;
-    }
-
-    return $user;
-}
-
-    // Optional: force authentication and exit if not valid
-    public static function authenticate() {
-        $user = self::getAuthenticatedUser();
-        if (!$user) {
-            http_response_code(401);
-            echo json_encode(["error" => "Unauthorized"]);
-            exit;
+            self::$connection = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
         }
-        return $user;
+
+        return self::$connection;
     }
 }
