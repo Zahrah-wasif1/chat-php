@@ -51,23 +51,6 @@ class Router {
 
 $router = new Router();
 
-// Root route - API info
-$router->add('GET', '/', function() {
-    echo json_encode([
-        "message" => "Chat API is running",
-        "version" => "1.0",
-        "endpoints" => [
-            "POST /auth/register" => "Register new user",
-            "POST /auth/verify" => "Verify user",
-            "GET /rooms" => "List all rooms",
-            "POST /rooms" => "Create new room",
-            "GET /users" => "List all users",
-            "POST /api/chat/messages" => "Send message",
-            "GET /api/chat/{room_id}/messages" => "Get room messages"
-        ]
-    ]);
-});
-
 // AUTH
 $router->add('POST', '/auth/register', function() {
     (new AuthController())->registerUser();
